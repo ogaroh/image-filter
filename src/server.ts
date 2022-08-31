@@ -14,30 +14,33 @@ import { filterImageFromURL, deleteLocalFiles } from "./util/util";
 
   // TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // get filtered image from url
-  app.get("/filteredimage", async (req, res) => {
-    try {
-      const image_url = req.query.image_url;
+  app.get(
+    "/filteredimage/",
+    async (req: express.Request, res: express.Response) => {
+      try {
+        const image_url = req.query.image_url;
 
-      if (!image_url) {
-        return res
-          .status(400)
-          .send("Please specify the 'image_url' in the query.");
+        if (!image_url) {
+          return res
+            .status(400)
+            .send("Please specify the 'image_url' in the query.");
+        }
+
+        const filteredImage = await filterImageFromURL(image_url);
+
+        res.status(200).sendFile(filteredImage);
+
+        // delete files on the server (tmp folder)
+        res.on("finish", () => deleteLocalFiles([filteredImage]));
+      } catch (error) {
+        return res.status(422).send(`Unable to process this request. ${error}`);
       }
-
-      const filteredImage = await filterImageFromURL(image_url);
-
-      res.status(200).sendFile(filteredImage);
-
-      // delete files on the server (tmp folder)
-      res.on("finish", () => deleteLocalFiles([filteredImage]));
-    } catch (error) {
-      return res.status(422).send(`Unable to process this request. ${error}`);
     }
-  });
+  );
 
   // Root Endpoint
   // Displays a simple message to the user
-  app.get("/", async (req, res) => {
+  app.get("/", async (req: express.Request, res: express.Response) => {
     res.send("try GET /filteredimage?image_url={{}}");
   });
 
